@@ -26,7 +26,7 @@ public class LinkedList {
 	 * @return the node at the given index
 	 */		
 	public Node getNode(int index) {
-		if (index < 0 || index > size) {
+		if (index < 0 || index >= size) {
 			throw new IllegalArgumentException(
 					"index must be between 0 and size");
 		}
@@ -202,7 +202,8 @@ public class LinkedList {
 	public void remove(Node node) {
 		//if node is null, do nothing
 		if (node == null){
-			return;
+			throw new NullPointerException(
+					"Node cannot be null");
 		//if node to remove is first, update first to be the one it was pointing to
 		} else if(node == this.first){
 			this.first = this.first.next;
@@ -264,7 +265,7 @@ public class LinkedList {
 		int index = indexOf(block);
 		if (index == -1){
 			throw new IllegalArgumentException(
-					"the given memory block is not in this list");
+					"index must be between 0 and size");
 		} else {
 			remove(index);
 		}
