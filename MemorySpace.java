@@ -59,27 +59,30 @@ public class MemorySpace {
 	 */
 	public int malloc(int length) {		
 		ListIterator list = freeList.iterator();
-		// runs as long as there is another element in the list
-		while(list.hasNext()){
-			//finds a block with length greater than given length
-			if(list.current.block.length >= length){
-				//create a new memory block with the current address and given length
+		// Runs as long as there is another element in the list
+		while (list.hasNext()) {
+			// Ensure list.current is not null before accessing block
+			if (list.current != null && list.current.block.length >= length) {
+				// Create a new memory block with the current address and given length
 				int baseAddress = list.current.block.baseAddress;
-				MemoryBlock block = new MemoryBlock(baseAddress,length);
-				//add the new memory block to the end of the allocated list
+				MemoryBlock block = new MemoryBlock(baseAddress, length);
+				// Add the new memory block to the end of the allocated list
 				allocatedList.addLast(block);
-				//change the address and length of the found block
+				// Update the free block (reduce length and shift base address)
 				list.current.block.baseAddress += length;
 				list.current.block.length -= length;
-				//if the length after change is 0, remove the block
-				if (list.current.block.length == 0) 
-					freeList.remove(list.current);
+				// If the free block is now of length 0, remove it safely
+				if (list.current.block.length == 0) {
+					Node toRemove = list.current; // Store current node before removal
+					list.next(); // Move iterator forward before removal
+					freeList.remove(toRemove); // Remove the node safely
+				}
 				return block.baseAddress;
 			}
-			//go to the next block if a block with enough length wasnt found
+			// Move to the next node
 			list.next();
 		}
-		return -1;
+		return -1; // No suitable block found
 	}
 
 	/**
