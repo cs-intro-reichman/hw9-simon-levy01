@@ -58,7 +58,27 @@ public class MemorySpace {
 	 * @return the base address of the allocated block, or -1 if unable to allocate
 	 */
 	public int malloc(int length) {		
-		//// Replace the following statement with your code
+		ListIterator list = freeList.iterator();
+		// runs as long as there is another element in the list
+		while(list.hasNext()){
+			//finds a block with length greater than given length
+			if(list.current.block.length >= length){
+				//create a new memory block with the current address and given length
+				int baseAddress = list.current.block.baseAddress;
+				MemoryBlock block = new MemoryBlock(baseAddress,length);
+				//add the new memory block to the end of the allocated list
+				allocatedList.addLast(block);
+				//change the address and length of the found block
+				list.current.block.baseAddress += length;
+				list.current.block.length -= length;
+				//if the length after change is 0, remove the block
+				if (list.current.block.length == 0) 
+					freeList.remove(list.current);
+				return block.baseAddress;
+			}
+			//go to the next block if a block with enough length wasnt found
+			list.next();
+		}
 		return -1;
 	}
 
@@ -71,7 +91,17 @@ public class MemorySpace {
 	 *            the starting address of the block to freeList
 	 */
 	public void free(int address) {
-		//// Write your code here
+		if(freeList.getSize() == 1 && freeList.getFirst().block.baseAddress == 0 && freeList.getFirst().block.length == 100)
+			throw new IllegalArgumentException("index must be between 0 and size");
+		ListIterator list = allocatedList.iterator();
+		while(list.hasNext()) {
+			if(list.current.block.baseAddress == address) {
+				allocatedList.remove(list.current.block);
+				freeList.addLast(list.current.block);
+				break;
+			}
+			list.next();
+		}
 	}
 	
 	/**
@@ -88,6 +118,31 @@ public class MemorySpace {
 	 * In this implementation Malloc does not call defrag.
 	 */
 	public void defrag() {
-		//// Write your code here
+		if (freeList.getSize() <= 1)
+			return;
+		Node temp = freeList.getFirst();
+		while (temp != null){
+			Node following = temp.next;
+			while (following != null){
+				MemoryBlock currentBlock = temp.block;
+				MemoryBlock nextBlock = following.block;
+				if (currentBlock.baseAddress + currentBlock.length == nextBlock.baseAddress) {
+					currentBlock.length += nextBlock.length;  
+					freeList.remove(following);  
+					following = temp.next;  
+				}
+				else if(nextBlock.baseAddress + nextBlock.length == currentBlock.baseAddress) {
+					nextBlock.length += currentBlock.length; 
+					nextBlock.baseAddress = currentBlock.baseAddress;  
+					freeList.remove(temp); 
+					temp = freeList.getFirst();  
+					break;
+				}
+				else 
+				following = following.next;
+			}
+			if (temp != null)
+				temp = temp.next;
+		}
 	}
 }
